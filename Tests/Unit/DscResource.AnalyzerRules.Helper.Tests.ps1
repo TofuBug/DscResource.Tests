@@ -5,8 +5,7 @@ Describe 'DscResource.AnalyzerRules.Helper Unit Tests' {
         $modulePath = Join-Path -Path $moduleRootPath -ChildPath 'DscResource.AnalyzerRules.Helper.psm1'
         Import-Module -Name $modulePath -Force
     }
-
-    InModuleScope 'DscResource.AnalyzerRules.Helper Test' {
+    InModuleScope 'DscResource.AnalyzerRules.Helper' {
         Describe 'Get-StatementBlockAsRows' {
             Context 'When string contains CRLF as new line' {
                 BeforeAll {
