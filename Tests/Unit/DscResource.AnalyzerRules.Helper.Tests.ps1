@@ -6,7 +6,7 @@ Describe 'DscResource.AnalyzerRules.Helper Unit Tests' {
         Import-Module -Name $modulePath -Force
     }
 
-    InModuleScope 'DscResource.AnalyzerRules.Helper' {
+    InModuleScope 'DscResource.AnalyzerRules.Helper Test' {
         Describe 'Get-StatementBlockAsRows' {
             Context 'When string contains CRLF as new line' {
                 BeforeAll {
