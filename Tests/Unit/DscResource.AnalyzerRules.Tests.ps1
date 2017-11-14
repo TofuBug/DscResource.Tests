@@ -1234,41 +1234,44 @@ Describe "$($script:ModuleName) Unit Tests" {
             }
         }
 
-        Context 'When Enum has an opening brace on the same line' {
-            It 'Should write the correct error record' {
-                $invokeScriptAnalyzerParameters['ScriptDefinition'] = '
+        Context 'Enum'
+        {
+
+            Context 'When Enum has an opening brace on the same line' {
+                It 'Should write the correct error record' {
+                    $invokeScriptAnalyzerParameters['ScriptDefinition'] = '
                     enum Test {
                         Good
                         Bad
                     }
                 '
 
-                $record = Invoke-ScriptAnalyzer @invokeScriptAnalyzerParameters
-                ($record | Measure-Object).Count | Should BeExactly 1
-                $record.Message | Should Be $localizedData.EnumOpeningBraceNotOnSameLine
-            }
+                    $record = Invoke-ScriptAnalyzer @invokeScriptAnalyzerParameters
+                    ($record | Measure-Object).Count | Should BeExactly 1
+                    $record.Message | Should Be $localizedData.EnumOpeningBraceNotOnSameLine
+                }
             
-        }
+            }
 
-        Context 'When Enum Opening brace is not followed by a new line' {
-            It 'Should write the correct error record' {
-                $invokeScriptAnalyzerParameters['ScriptDefinition'] = '
+            Context 'When Enum Opening brace is not followed by a new line' {
+                It 'Should write the correct error record' {
+                    $invokeScriptAnalyzerParameters['ScriptDefinition'] = '
                     enum Test 
                     { Good
                         Bad
                     }
                 '
 
-                $record = Invoke-ScriptAnalyzer @invokeScriptAnalyzerParameters
-                ($record | Measure-Object).Count | Should BeExactly 1
-                $record.Message | Should Be $localizedData.EnumOpeningBraceShouldBeFollowedByNewLine
-            }
+                    $record = Invoke-ScriptAnalyzer @invokeScriptAnalyzerParameters
+                    ($record | Measure-Object).Count | Should BeExactly 1
+                    $record.Message | Should Be $localizedData.EnumOpeningBraceShouldBeFollowedByNewLine
+                }
             
-        }
+            }
 
-        Context 'When Enum opening brace is followed by more than one new line' {
-            It 'Should write the correct error record' {
-                $invokeScriptAnalyzerParameters['ScriptDefinition'] = '
+            Context 'When Enum opening brace is followed by more than one new line' {
+                It 'Should write the correct error record' {
+                    $invokeScriptAnalyzerParameters['ScriptDefinition'] = '
                     enum Test 
                     {
                     
@@ -1277,11 +1280,65 @@ Describe "$($script:ModuleName) Unit Tests" {
                     }
                 '
 
-                $record = Invoke-ScriptAnalyzer @invokeScriptAnalyzerParameters
-                ($record | Measure-Object).Count | Should BeExactly 1
-                $record.Message | Should Be $localizedData.EnumOpeningBraceShouldBeFollowedByOnlyOneNewLine
-            }
+                    $record = Invoke-ScriptAnalyzer @invokeScriptAnalyzerParameters
+                    ($record | Measure-Object).Count | Should BeExactly 1
+                    $record.Message | Should Be $localizedData.EnumOpeningBraceShouldBeFollowedByOnlyOneNewLine
+                }
             
+            }
+        }
+        Context 'Class'
+        {
+
+            Context 'When Class has an opening brace on the same line' {
+                It 'Should write the correct error record' {
+                    $invokeScriptAnalyzerParameters['ScriptDefinition'] = '
+                    class Test {
+                        Good
+                        Bad
+                    }
+                '
+
+                    $record = Invoke-ScriptAnalyzer @invokeScriptAnalyzerParameters
+                    ($record | Measure-Object).Count | Should BeExactly 1
+                    $record.Message | Should Be $localizedData.ClassOpeningBraceNotOnSameLine
+                }
+            
+            }
+
+            Context 'When Class Opening brace is not followed by a new line' {
+                It 'Should write the correct error record' {
+                    $invokeScriptAnalyzerParameters['ScriptDefinition'] = '
+                    class Test 
+                    { Good
+                        Bad
+                    }
+                '
+
+                    $record = Invoke-ScriptAnalyzer @invokeScriptAnalyzerParameters
+                    ($record | Measure-Object).Count | Should BeExactly 1
+                    $record.Message | Should Be $localizedData.ClassOpeningBraceShouldBeFollowedByNewLine
+                }
+            
+            }
+
+            Context 'When Class opening brace is followed by more than one new line' {
+                It 'Should write the correct error record' {
+                    $invokeScriptAnalyzerParameters['ScriptDefinition'] = '
+                    class Test 
+                    {
+                    
+                        Good
+                        Bad
+                    }
+                '
+
+                    $record = Invoke-ScriptAnalyzer @invokeScriptAnalyzerParameters
+                    ($record | Measure-Object).Count | Should BeExactly 1
+                    $record.Message | Should Be $localizedData.ClassOpeningBraceShouldBeFollowedByOnlyOneNewLine
+                }
+            
+            }
         }
     }
 }

@@ -860,13 +860,23 @@ function Measure-TypeDefinition
         }
         elseif ($TypeDefinitionAst.IsClass)
         {
-            $script:diagnosticRecord['Message'] = "Class!"
-            $script:diagnosticRecord -as $diagnosticRecordType
-        }
-        else 
-        {
-            $script:diagnosticRecord['Message'] = "What?"
-            $script:diagnosticRecord -as $diagnosticRecordType
+            if (Test-StatementOpeningBraceOnSameLine @testParameters)
+            {
+                $script:diagnosticRecord['Message'] = $localizedData.ClassOpeningBraceNotOnSameLine
+                $script:diagnosticRecord -as $diagnosticRecordType
+            }
+
+            if (Test-StatementOpeningBraceIsNotFollowedByNewLine @testParameters)
+            {
+                $script:diagnosticRecord['Message'] = $localizedData.ClassOpeningBraceShouldBeFollowedByNewLine
+                $script:diagnosticRecord -as $diagnosticRecordType
+            } # if
+
+            if (Test-StatementOpeningBraceIsFollowedByMoreThanOneNewLine @testParameters)
+            {
+                $script:diagnosticRecord['Message'] = $localizedData.ClassOpeningBraceShouldBeFollowedByOnlyOneNewLine
+                $script:diagnosticRecord -as $diagnosticRecordType
+            } # if
         }
     }
     catch
