@@ -1234,9 +1234,7 @@ Describe "$($script:ModuleName) Unit Tests" {
             }
         }
 
-        Context 'Enum'
-        {
-
+        Context 'Enum' {
             Context 'When Enum has an opening brace on the same line' {
                 It 'Should write the correct error record' {
                     $invokeScriptAnalyzerParameters['ScriptDefinition'] = '
@@ -1287,15 +1285,15 @@ Describe "$($script:ModuleName) Unit Tests" {
             
             }
         }
-        Context 'Class'
-        {
-
+        Context 'Class' {
             Context 'When Class has an opening brace on the same line' {
                 It 'Should write the correct error record' {
                     $invokeScriptAnalyzerParameters['ScriptDefinition'] = '
                     class Test {
-                        Good
-                        Bad
+                        [int] $Good
+                        [Void] Bad()
+                        {
+                        }
                     }
                 '
 
@@ -1310,8 +1308,10 @@ Describe "$($script:ModuleName) Unit Tests" {
                 It 'Should write the correct error record' {
                     $invokeScriptAnalyzerParameters['ScriptDefinition'] = '
                     class Test 
-                    { Good
-                        Bad
+                    {   [int] $Good
+                        [Void] Bad() 
+                        {
+                        }
                     }
                 '
 
@@ -1328,8 +1328,10 @@ Describe "$($script:ModuleName) Unit Tests" {
                     class Test 
                     {
                     
-                        Good
-                        Bad
+                        [int] $Good
+                        [Void] Bad()
+                        {
+                        }
                     }
                 '
 
