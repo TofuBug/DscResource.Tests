@@ -165,6 +165,23 @@ Describe "$($script:ModuleName) Unit Tests" {
                 $record.Message | Should Be $localizedData.ParameterBlockParameterAttributeMissing
             }
         }
+
+        Context 'When Parameter is part of a method in a class' {
+            It 'Should not return any records' {
+                $definition = '
+                class Resource
+                {
+                    [Void] Get_TargetResource($ParameterName1,$ParameterName2)
+                    {
+                    }
+                }
+            '
+
+            $record = Invoke-ScriptAnalyzer -ScriptDefinition $definition -CustomRulePath $modulePath
+            $record | Should Be $null
+            ($record | Measure-Object).Count | Should Be 0
+        }
+        }
     }
 
     Describe 'Measure-ParameterBlockMandatoryNamedArgument' {

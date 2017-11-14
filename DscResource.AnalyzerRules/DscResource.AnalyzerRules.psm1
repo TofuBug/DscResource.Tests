@@ -51,23 +51,46 @@ function Measure-ParameterBlockParameterAttribute
     {
         $script:diagnosticRecord['Extent'] = $ParameterAst.Extent
 
-        if ($ParameterAst.Attributes.TypeName.FullName -notcontains 'parameter')
+        # Check if Parameter is in a method call for a Class
+        # by walking up the AST tree till we get to the top or 
+        # find we are in a Class
+        [bool] $InAClass = $false
+        $ParentAst = $ParameterAst.Parent
+        while ($null -ne $ParentAst)
         {
-            $script:diagnosticRecord['Message'] = $localizedData.ParameterBlockParameterAttributeMissing
-
-            $script:diagnosticRecord -as $script:diagnosticRecordType
+            # Check if Parent is a TypeDefinitionAst and if so if it is also a Class
+            if ($ParentAst -is [System.Management.Automation.Language.TypeDefinitionAst] -and ([System.Management.Automation.Language.TypeDefinitionAst]$ParentAst).IsClass)
+            {
+                $InAClass = $true
+                break
+            }
+            else
+            {
+                $ParentAst = $ParentAst.Parent
+            }
         }
-        elseif ($ParameterAst.Attributes[0].TypeName.FullName -ne 'parameter')
+        # If we are in a class the parameter attributes are not valid for Methods
+        # the Parameter attributes have to be applied to the properties of the Class
+        if (!$InAClass)
         {
-            $script:diagnosticRecord['Message'] = $localizedData.ParameterBlockParameterAttributeWrongPlace
+            if ($ParameterAst.Attributes.TypeName.FullName -notcontains 'parameter')
+            {
+                $script:diagnosticRecord['Message'] = $localizedData.ParameterBlockParameterAttributeMissing
 
-            $script:diagnosticRecord -as $script:diagnosticRecordType
-        }
-        elseif ($ParameterAst.Attributes[0].TypeName.FullName -cne 'Parameter')
-        {
-            $script:diagnosticRecord['Message'] = $localizedData.ParameterBlockParameterAttributeLowerCase
+                $script:diagnosticRecord -as $script:diagnosticRecordType
+            }
+            elseif ($ParameterAst.Attributes[0].TypeName.FullName -ne 'parameter')
+            {
+                $script:diagnosticRecord['Message'] = $localizedData.ParameterBlockParameterAttributeWrongPlace
 
-            $script:diagnosticRecord -as $script:diagnosticRecordType
+                $script:diagnosticRecord -as $script:diagnosticRecordType
+            }
+            elseif ($ParameterAst.Attributes[0].TypeName.FullName -cne 'Parameter')
+            {
+                $script:diagnosticRecord['Message'] = $localizedData.ParameterBlockParameterAttributeLowerCase
+
+                $script:diagnosticRecord -as $script:diagnosticRecordType
+            }
         }
     }
     catch
