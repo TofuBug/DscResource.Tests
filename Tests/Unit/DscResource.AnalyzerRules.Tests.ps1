@@ -1249,5 +1249,39 @@ Describe "$($script:ModuleName) Unit Tests" {
             }
             
         }
+
+        Context 'When Enum Opening brace is not followed by a new line' {
+            It 'Should write the correct error record' {
+                $invokeScriptAnalyzerParameters['ScriptDefinition'] = '
+                    enum Test 
+                    { Good
+                        Bad
+                    }
+                '
+
+                $record = Invoke-ScriptAnalyzer @invokeScriptAnalyzerParameters
+                ($record | Measure-Object).Count | Should BeExactly 1
+                $record.Message | Should Be $localizedData.EnumOpeningBraceShouldBeFollowedByNewLine
+            }
+            
+        }
+
+        Context 'When Enum opening brace is followed by more than one new line' {
+            It 'Should write the correct error record' {
+                $invokeScriptAnalyzerParameters['ScriptDefinition'] = '
+                    enum Test 
+                    {
+                    
+                        Good
+                        Bad
+                    }
+                '
+
+                $record = Invoke-ScriptAnalyzer @invokeScriptAnalyzerParameters
+                ($record | Measure-Object).Count | Should BeExactly 1
+                $record.Message | Should Be $localizedData.EnumOpeningBraceShouldBeFollowedByOnlyOneNewLine
+            }
+            
+        }
     }
 }

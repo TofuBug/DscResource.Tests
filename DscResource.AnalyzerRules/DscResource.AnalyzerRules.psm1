@@ -801,17 +801,16 @@ function Measure-CatchClause
 
 <#
     .SYNOPSIS
-        Validates the catch-clause block braces and new lines around braces.
+        Validates the Class and Enum of PowerShell.
 
     .DESCRIPTION
-        Each catch-clause should have the opening brace on a separate line.
-        Also, the opening brace should be followed by a new line.
+        Each Class or Enum must be formatted correctly.
 
     .EXAMPLE
-        Measure-CatchClause -CatchClauseAst $ScriptBlockAst
+        Measure-TypeDefinition -TypeDefinitionAst $ScriptBlockAst
 
     .INPUTS
-        [System.Management.Automation.Language.CatchClauseAst]
+        [System.Management.Automation.Language.TypeDefinitionAst]
 
     .OUTPUTS
         [Microsoft.Windows.Powershell.ScriptAnalyzer.Generic.DiagnosticRecord[]]
@@ -836,7 +835,7 @@ function Measure-TypeDefinition
         $script:diagnosticRecord['Extent'] = $TypeDefinitionAst.Extent
 
         $testParameters = @{
-            StatementBlock = $CatchClauseAst.Extent
+            StatementBlock = $TypeDefinitionAst.Extent
         }
         
         if ($TypeDefinitionAst.IsEnum)
@@ -861,7 +860,13 @@ function Measure-TypeDefinition
         }
         elseif ($TypeDefinitionAst.IsClass)
         {
-            
+            $script:diagnosticRecord['Message'] = "Class!"
+            $script:diagnosticRecord -as $diagnosticRecordType
+        }
+        else 
+        {
+            $script:diagnosticRecord['Message'] = "What?"
+            $script:diagnosticRecord -as $diagnosticRecordType
         }
     }
     catch
