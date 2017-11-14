@@ -15,25 +15,25 @@ $script:diagnosticRecord = @{
 }
 
 <#
-.SYNOPSIS
-    Validates the [Parameter()] attribute for each parameter.
+    .SYNOPSIS
+        Validates the [Parameter()] attribute for each parameter.
 
-.DESCRIPTION
-    All parameters in a param block must contain a [Parameter()] attribute
-    and it must be the first attribute for each parameter and must start with
-    a capital letter P.
+    .DESCRIPTION
+        All parameters in a param block must contain a [Parameter()] attribute
+        and it must be the first attribute for each parameter and must start with
+        a capital letter P.
 
-.EXAMPLE
-    Measure-ParameterBlockParameterAttribute -ParameterAst $parameterAst
+    .EXAMPLE
+        Measure-ParameterBlockParameterAttribute -ParameterAst $parameterAst
 
-.INPUTS
-    [System.Management.Automation.Language.ParameterAst]
+    .INPUTS
+        [System.Management.Automation.Language.ParameterAst]
 
-.OUTPUTS
-    [Microsoft.Windows.Powershell.ScriptAnalyzer.Generic.DiagnosticRecord[]]
+    .OUTPUTS
+        [Microsoft.Windows.Powershell.ScriptAnalyzer.Generic.DiagnosticRecord[]]
 
-.NOTES
-    None
+    .NOTES
+        None
 #>
 function Measure-ParameterBlockParameterAttribute
 {
@@ -77,24 +77,24 @@ function Measure-ParameterBlockParameterAttribute
 }
 
 <#
-.SYNOPSIS
-    Validates use of the Mandatory named argument within a Parameter attribute.
+    .SYNOPSIS
+        Validates use of the Mandatory named argument within a Parameter attribute.
 
-.DESCRIPTION
-    If a parameter attribute contains the mandatory attribute the
-    mandatory attribute must be formatted correctly.
+    .DESCRIPTION
+        If a parameter attribute contains the mandatory attribute the
+        mandatory attribute must be formatted correctly.
 
-.EXAMPLE
-    Measure-ParameterBlockMandatoryNamedArgument -NamedAttributeArgumentAst $namedAttributeArgumentAst
+    .EXAMPLE
+        Measure-ParameterBlockMandatoryNamedArgument -NamedAttributeArgumentAst $namedAttributeArgumentAst
 
-.INPUTS
-    [System.Management.Automation.Language.NamedAttributeArgumentAst]
+    .INPUTS
+        [System.Management.Automation.Language.NamedAttributeArgumentAst]
 
-.OUTPUTS
-    [Microsoft.Windows.Powershell.ScriptAnalyzer.Generic.DiagnosticRecord[]]
+    .OUTPUTS
+        [Microsoft.Windows.Powershell.ScriptAnalyzer.Generic.DiagnosticRecord[]]
 
-.NOTES
-    None
+    .NOTES
+        None
 #>
 function Measure-ParameterBlockMandatoryNamedArgument
 {
@@ -792,6 +792,77 @@ function Measure-CatchClause
             $script:diagnosticRecord['Message'] = $localizedData.CatchClauseOpeningBraceShouldBeFollowedByOnlyOneNewLine
             $script:diagnosticRecord -as $diagnosticRecordType
         } # if
+    }
+    catch
+    {
+        $PSCmdlet.ThrowTerminatingError($PSItem)
+    }
+}
+
+<#
+    .SYNOPSIS
+        Validates the catch-clause block braces and new lines around braces.
+
+    .DESCRIPTION
+        Each catch-clause should have the opening brace on a separate line.
+        Also, the opening brace should be followed by a new line.
+
+    .EXAMPLE
+        Measure-CatchClause -CatchClauseAst $ScriptBlockAst
+
+    .INPUTS
+        [System.Management.Automation.Language.CatchClauseAst]
+
+    .OUTPUTS
+        [Microsoft.Windows.Powershell.ScriptAnalyzer.Generic.DiagnosticRecord[]]
+
+   .NOTES
+        None
+#>
+function Measure-TypeDefinition
+{
+    [CmdletBinding()]
+    [OutputType([Microsoft.Windows.Powershell.ScriptAnalyzer.Generic.DiagnosticRecord[]])]
+    Param
+    (
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [System.Management.Automation.Language.TypeDefinitionAst]
+        $TypeDefinitionAst
+    )
+
+    try
+    {
+        $script:diagnosticRecord['Extent'] = $TypeDefinitionAst.Extent
+
+        $testParameters = @{
+            StatementBlock = $CatchClauseAst.Extent
+        }
+        
+        if ($TypeDefinitionAst.IsEnum)
+        {
+            if (Test-StatementOpeningBraceOnSameLine @testParameters)
+            {
+                $script:diagnosticRecord['Message'] = $localizedData.EnumOpeningBraceNotOnSameLine
+                $script:diagnosticRecord -as $diagnosticRecordType
+            }
+
+            if (Test-StatementOpeningBraceIsNotFollowedByNewLine @testParameters)
+            {
+                $script:diagnosticRecord['Message'] = $localizedData.EnumOpeningBraceShouldBeFollowedByNewLine
+                $script:diagnosticRecord -as $diagnosticRecordType
+            } # if
+
+            if (Test-StatementOpeningBraceIsFollowedByMoreThanOneNewLine @testParameters)
+            {
+                $script:diagnosticRecord['Message'] = $localizedData.EnumOpeningBraceShouldBeFollowedByOnlyOneNewLine
+                $script:diagnosticRecord -as $diagnosticRecordType
+            } # if
+        }
+        elseif ($TypeDefinitionAst.IsClass)
+        {
+            
+        }
     }
     catch
     {

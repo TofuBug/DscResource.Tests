@@ -1226,4 +1226,28 @@ Describe "$($script:ModuleName) Unit Tests" {
             }
         }
     }
+
+    Describe 'Measure-TypeDefinition' {
+        BeforeEach {
+            $invokeScriptAnalyzerParameters = @{
+                CustomRulePath = $modulePath
+            }
+        }
+
+        Context 'When Enum has an opening brace on the same line' {
+            It 'Should write the correct error record' {
+                $invokeScriptAnalyzerParameters['ScriptDefinition'] = '
+                    enum Test {
+                        Good
+                        Bad
+                    }
+                '
+
+                $record = Invoke-ScriptAnalyzer @invokeScriptAnalyzerParameters
+                ($record | Measure-Object).Count | Should BeExactly 1
+                $record.Message | Should Be $localizedData.EnumOpeningBraceNotOnSameLine
+            }
+            
+        }
+    }
 }
