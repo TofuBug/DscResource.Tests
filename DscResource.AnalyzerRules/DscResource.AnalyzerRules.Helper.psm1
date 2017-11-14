@@ -1,5 +1,54 @@
 <#
     .SYNOPSIS
+        Helper function to check if an Ast is part of a class.
+        Returns true or false
+    .EXAMPLE
+        IsInClass -Ast $ParameterBlockAst
+
+    .INPUTS
+        [System.]
+
+    .OUTPUTS
+        [System.String[]]
+
+   .NOTES
+        None
+#>
+function Test-IsInClass
+{
+    [CmdletBinding()]
+    [OutputType([bool])]
+    param
+    (
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [System.Management.Automation.Language.Ast]
+        $Ast
+    )
+
+    # Check if Parameter is in a method call for a Class
+    # by walking up the AST tree till we get to the top or 
+    # find we are in a Class
+    [bool] $InAClass = $false
+    $ParentAst = $Ast.Parent
+    while ($null -ne $ParentAst)
+    {
+        # Check if Parent is a TypeDefinitionAst and if so if it is also a Class
+        if ($ParentAst -is [System.Management.Automation.Language.TypeDefinitionAst] -and ([System.Management.Automation.Language.TypeDefinitionAst]$ParentAst).IsClass)
+        {
+            $InAClass = $true
+            break
+        }
+        else
+        {
+            $ParentAst = $ParentAst.Parent
+        }
+    }
+    $InAClass
+}
+
+<#
+    .SYNOPSIS
         Helper function for the Test-Statement* helper functions.
         Returns the extent text as an array of strings.
 
@@ -35,7 +84,6 @@ function Get-StatementBlockAsRows
     $statementBlockWithNewLine = $StatementBlock -replace '\r', ''
     return $statementBlockWithNewLine -split '\n'
 }
-
 
 <#
     .SYNOPSIS

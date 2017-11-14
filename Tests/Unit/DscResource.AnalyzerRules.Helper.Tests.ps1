@@ -177,5 +177,48 @@ Describe 'DscResource.AnalyzerRules.Helper Unit Tests' {
                 }
             }
         }
+
+        Describe 'Test-IsInClass work' {
+            Context 'Non Class AST' {
+                It 'Should return false for an AST not in a Class AST' {
+                    $Definition = '
+                    function Get-Something
+                    {
+                        Param
+                        (
+                            [Parameter(Mandatory=$true)]
+                            [string]
+                            $Path
+                        )
+
+                        $Path
+                    }
+                '
+                    $Ast = [System.Management.Automation.Language.Parser]::ParseInput($Definition, [ref] $null, [ref] $null)
+                    $ParameterAst = $Ast.Find( {param([System.Management.Automation.Language.Ast] $AST) $Ast -is [System.Management.Automation.Language.ParameterAst]}, $true)            
+                    ($ParameterAst -is [System.Management.Automation.Language.ParameterAst]) | Should Be $true
+                    $IsInClass = Test-IsInClass -Ast $ParameterAst
+                    $IsInClass | Should Be $false
+                }
+            }
+            Context 'Class AST' {
+                It 'Should Return True for an AST contained in a class AST' {
+                    $Definition = '
+                    class Something
+                    {
+                        [void] Write([int] $Num)
+                        {
+                            Write-Host "Writing $Num"
+                        }
+                    }
+                '
+                    $Ast = [System.Management.Automation.Language.Parser]::ParseInput($Definition, [ref] $null, [ref] $null)
+                    $ParameterAst = $Ast.Find( {param([System.Management.Automation.Language.Ast] $AST) $Ast -is [System.Management.Automation.Language.ParameterAst]}, $true)            
+                    ($ParameterAst -is [System.Management.Automation.Language.ParameterAst]) | Should Be $true
+                    $IsInClass = Test-IsInClass -Ast $ParameterAst
+                    $IsInClass | Should Be $true
+                }
+            }
+        }
     }
 }

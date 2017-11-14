@@ -50,27 +50,9 @@ function Measure-ParameterBlockParameterAttribute
     try
     {
         $script:diagnosticRecord['Extent'] = $ParameterAst.Extent
-
-        # Check if Parameter is in a method call for a Class
-        # by walking up the AST tree till we get to the top or 
-        # find we are in a Class
-        [bool] $InAClass = $false
-        $ParentAst = $ParameterAst.Parent
-        while ($null -ne $ParentAst)
-        {
-            # Check if Parent is a TypeDefinitionAst and if so if it is also a Class
-            if ($ParentAst -is [System.Management.Automation.Language.TypeDefinitionAst] -and ([System.Management.Automation.Language.TypeDefinitionAst]$ParentAst).IsClass)
-            {
-                $InAClass = $true
-                break
-            }
-            else
-            {
-                $ParentAst = $ParentAst.Parent
-            }
-        }
-        # If we are in a class the parameter attributes are not valid for Methods
-        # the Parameter attributes have to be applied to the properties of the Class
+        [bool] $InAClass = Test-IsInClass -Ast $ParameterAst
+        # If we are in a class the parameter attributes are not valid in Classes
+        # the ParameterValidation attributes are however
         if (!$InAClass)
         {
             if ($ParameterAst.Attributes.TypeName.FullName -notcontains 'parameter')
@@ -133,41 +115,48 @@ function Measure-ParameterBlockMandatoryNamedArgument
 
     try
     {
-        if ($NamedAttributeArgumentAst.ArgumentName -eq 'Mandatory')
-        {
-            $script:diagnosticRecord['Extent'] = $NamedAttributeArgumentAst.Extent
+        [bool] $InAClass = Test-IsInClass -Ast $NamedAttributeArgumentAst
 
-            if ($NamedAttributeArgumentAst)
+        # Parameter Attributes are not valid in classes, and DscProperty does
+        # not use hte (Mandatory = $true) format just DscProperty(Mandatory)
+        if (!$InAClass)
+        {
+            if ($NamedAttributeArgumentAst.ArgumentName -eq 'Mandatory')
             {
-                $invalidFormat = $false
-                try
+                $script:diagnosticRecord['Extent'] = $NamedAttributeArgumentAst.Extent
+
+                if ($NamedAttributeArgumentAst)
                 {
-                    $value = $NamedAttributeArgumentAst.Argument.SafeGetValue()
-                    if ($value -eq $false)
+                    $invalidFormat = $false
+                    try
                     {
-                        $script:diagnosticRecord['Message'] = $localizedData.ParameterBlockNonMandatoryParameterMandatoryAttributeWrongFormat
+                        $value = $NamedAttributeArgumentAst.Argument.SafeGetValue()
+                        if ($value -eq $false)
+                        {
+                            $script:diagnosticRecord['Message'] = $localizedData.ParameterBlockNonMandatoryParameterMandatoryAttributeWrongFormat
+
+                            $script:diagnosticRecord -as $script:diagnosticRecordType
+                        }
+                        elseif ($NamedAttributeArgumentAst.Argument.VariablePath.UserPath -cne 'true')
+                        {
+                            $invalidFormat = $true
+                        }
+                        elseif ($NamedAttributeArgumentAst.ArgumentName -cne 'Mandatory')
+                        {
+                            $invalidFormat = $true
+                        }
+                    }
+                    catch
+                    {
+                        $invalidFormat = $true
+                    }
+
+                    if ($invalidFormat)
+                    {
+                        $script:diagnosticRecord['Message'] = $localizedData.ParameterBlockParameterMandatoryAttributeWrongFormat
 
                         $script:diagnosticRecord -as $script:diagnosticRecordType
                     }
-                    elseif ($NamedAttributeArgumentAst.Argument.VariablePath.UserPath -cne 'true')
-                    {
-                        $invalidFormat = $true
-                    }
-                    elseif ($NamedAttributeArgumentAst.ArgumentName -cne 'Mandatory')
-                    {
-                        $invalidFormat = $true
-                    }
-                }
-                catch
-                {
-                    $invalidFormat = $true
-                }
-
-                if ($invalidFormat)
-                {
-                    $script:diagnosticRecord['Message'] = $localizedData.ParameterBlockParameterMandatoryAttributeWrongFormat
-
-                    $script:diagnosticRecord -as $script:diagnosticRecordType
                 }
             }
         }

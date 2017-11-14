@@ -177,10 +177,10 @@ Describe "$($script:ModuleName) Unit Tests" {
                 }
             '
 
-            $record = Invoke-ScriptAnalyzer -ScriptDefinition $definition -CustomRulePath $modulePath
-            $record | Should Be $null
-            ($record | Measure-Object).Count | Should Be 0
-        }
+                $record = Invoke-ScriptAnalyzer -ScriptDefinition $definition -CustomRulePath $modulePath
+                $record | Should Be $null
+                ($record | Measure-Object).Count | Should Be 0
+            }
         }
     }
 
@@ -319,6 +319,39 @@ Describe "$($script:ModuleName) Unit Tests" {
                 '
 
                 Invoke-ScriptAnalyzer -ScriptDefinition $definition -CustomRulePath $modulePath | Should BeNullOrEmpty
+            }
+            Context 'When Mandatory Attribute NamedParameter is in a class' {
+                It 'Should not return any records' {
+                    $definition = '
+                    [DscResource()]
+                    class Resource
+                    {
+                        [DscProperty(Key)]
+                        [string] $DscKeyString
+                        
+                        [DscProperty(Mandatory)]
+                        [int] $DscNum
+
+                        [Resource] Get()
+                        {
+                            return $this
+                        }
+
+                        [void] Set()
+                        {
+                        }
+
+                        [bool] Test()
+                        {
+                            return $true
+                        }
+                    }
+                '
+    
+                    $record = Invoke-ScriptAnalyzer -ScriptDefinition $definition -CustomRulePath $modulePath
+                    $record | Should Be $null
+                    ($record | Measure-Object).Count | Should Be 0
+                }
             }
         }
 
