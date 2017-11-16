@@ -26,23 +26,76 @@ function Test-IsInClass
         $Ast
     )
 
-    # Check if Parameter is in a method call for a Class
-    # by walking up the AST tree till we get to the top or 
-    # find we are in a Class
+    <# 
+        Check if Parameter is in a method call for a Class
+        or if a Named Attribute is part of a Class Property
+
+        I initially just walked up the AST tree till I hit
+        a TypeDefinitionAst that was a class
+
+        But...
+
+        That means it would throw false positives for things like
+
+        class HasAFunctionInIt
+        {
+            [Func[int,int]] $MyFunc = {
+                param
+                (
+                    [Parameter(Mandatory=$true)]
+                    [int]
+                    $Input
+                )
+
+                $Input
+            }
+        }
+
+        Where the param block and all its respective items ARE
+        valid being in their own anonymous function definition
+        that just happens to be inside a class property's
+        assignment value
+
+        So This check has to be a DELIBERATE step by step up the
+        AST Tree ONLY far enough to validate if it is directly
+        part of a class or not
+    #>
     [bool] $InAClass = $false
-    $ParentAst = $Ast.Parent
-    while ($null -ne $ParentAst)
+    <#  
+        As far as I know the only place you can have nammed
+        Attribute Arguments in Classes is on Properties.
+        Arguments in Methods of classes only support Types
+        
+        This makes it easy to say If its part of an Attribute
+        That is part of a PropertyMember
+        That is part of a TypeDefinition
+        This Is a class
+
+        That our Named Attribute Argument is part of a class
+    #>
+    if ($Ast -is [System.Management.Automation.Language.NamedAttributeArgumentAst])
     {
-        # Check if Parent is a TypeDefinitionAst and if so if it is also a Class
-        if ($ParentAst -is [System.Management.Automation.Language.TypeDefinitionAst] -and ([System.Management.Automation.Language.TypeDefinitionAst]$ParentAst).IsClass)
-        {
-            $InAClass = $true
-            break
-        }
-        else
-        {
-            $ParentAst = $ParentAst.Parent
-        }
+        $InAClass = $Ast.Parent -is [System.Management.Automation.Language.AttributeAst] -and 
+            $Ast.Parent.Parent -is [System.Management.Automation.Language.PropertyMemberAst] -and
+            $Ast.Parent.Parent.Parent -is [System.Management.Automation.Language.TypeDefinitionAst] -and
+            $ast.Parent.Parent.Parent.IsClass
+    }
+    <#
+        Since classes do not support param blocks inside
+        Their method bodies, we only have to check if it is 
+        part of a FunctionDefintion
+        That is part of a FunctionMember (Class Method)
+        That is part of a TypeDefinition
+        That is a class
+
+        then our Parameter is part of a class
+    #>
+    elseif ($Ast -is [System.Management.Automation.Language.ParameterAst])
+    {
+        $InAClass = $Ast.Parent -is [System.Management.Automation.Language.FunctionDefinitionAst] -and
+            $Ast.Parent.Parent -is [System.Management.Automation.Language.FunctionMemberAst] -and
+            $Ast.Parent.Parent.Parent -is [System.Management.Automation.Language.TypeDefinitionAst] -and
+            $Ast.Parent.Parent.Parent.IsClass
     }
     $InAClass
 }

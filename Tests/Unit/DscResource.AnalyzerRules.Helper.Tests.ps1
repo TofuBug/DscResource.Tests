@@ -218,6 +218,29 @@ Describe 'DscResource.AnalyzerRules.Helper Unit Tests' {
                     $IsInClass = Test-IsInClass -Ast $ParameterAst
                     $IsInClass | Should Be $true
                 }
+
+                It "Should return false for an AST contained in a ScriptBlock`r`n`tthat is a value assignment for a property or method in a class AST" {
+                    $Definition = '
+                    class Something
+                    {
+                        [Func[Int,Int]] $MakeInt = {
+                            [Parameter(Mandatory=$true)]
+                            Param
+                            (
+                                [Parameter(Mandatory)]
+                                [int] $Input
+                            ) 
+                            $Input * 2
+                        }    
+                    }
+                '
+                    $Ast = [System.Management.Automation.Language.Parser]::ParseInput($Definition, [ref] $null, [ref] $null)
+                    $ParameterAst = $Ast.Find( {param([System.Management.Automation.Language.Ast] $AST) $Ast -is [System.Management.Automation.Language.ParameterAst]}, $true)            
+                    ($ParameterAst -is [System.Management.Automation.Language.ParameterAst]) | Should Be $true
+                    $IsInClass = Test-IsInClass -Ast $ParameterAst
+                    $IsInClass | Should Be $false
+
+                }
             }
         }
     }

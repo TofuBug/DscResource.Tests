@@ -171,7 +171,7 @@ Describe "$($script:ModuleName) Unit Tests" {
                 $definition = '
                 class Resource
                 {
-                    [Void] Get_TargetResource($ParameterName1,$ParameterName2)
+                    [void] Get_TargetResource($ParameterName1,$ParameterName2)
                     {
                     }
                 }
@@ -180,6 +180,32 @@ Describe "$($script:ModuleName) Unit Tests" {
                 $record = Invoke-ScriptAnalyzer -ScriptDefinition $definition -CustomRulePath $modulePath
                 $record | Should Be $null
                 ($record | Measure-Object).Count | Should Be 0
+            }
+        }
+
+        Context 'When Parameter is part of a script block that is part of a property in a class' {
+            it 'Should return records for the Parameter in the script block' {
+                $definition = '
+                class Resource
+                {
+                    [void] Get_TargetResource($ParameterName1,$ParameterName2)
+                    {
+                    }
+                    
+                    [Func[Int,Int]] $MakeInt = {
+                        [Parameter(Mandatory=$true)]
+                        Param
+                        (
+                            [int] $Input
+                        ) 
+                        $Input * 2
+                    }
+                }
+            '
+                    $record = Invoke-ScriptAnalyzer -ScriptDefinition $definition -CustomRulePath $modulePath
+                    ($record | Measure-Object).Count | Should Be 1
+                    $record.Message | Should Be $localizedData.ParameterBlockParameterAttributeMissing
+                    
             }
         }
     }
@@ -351,6 +377,49 @@ Describe "$($script:ModuleName) Unit Tests" {
                     $record = Invoke-ScriptAnalyzer -ScriptDefinition $definition -CustomRulePath $modulePath
                     $record | Should Be $null
                     ($record | Measure-Object).Count | Should Be 0
+                }
+            }
+            Context 'When Mandatory Attribute NamedParameter is in script block in a property in a class' {
+                It 'Should return records for NameParameter in the ScriptBlock only' {
+                    $definition = '
+                    [DscResource()]
+                    class Resource
+                    {
+                        [DscProperty(Key)]
+                        [string] $DscKeyString
+                        
+                        [DscProperty(Mandatory)]
+                        [int] $DscNum
+
+                        [Resource] Get()
+                        {
+                            return $this
+                        }
+
+                        [void] Set()
+                        {
+                        }
+
+                        [bool] Test()
+                        {
+                            return $true
+                        }
+
+                        [Func[Int,Int]] $MakeInt = {
+                            [Parameter(Mandatory=$true)]
+                            Param
+                            (
+                                [Parameter(Mandatory)]
+                                [int] $Input
+                            ) 
+                            $Input * 2
+                        }    
+                    }
+                '
+    
+                    $record = Invoke-ScriptAnalyzer -ScriptDefinition $definition -CustomRulePath $modulePath
+                    ($record | Measure-Object).Count | Should Be 1
+                    $record.Message | Should Be $localizedData.ParameterBlockParameterMandatoryAttributeWrongFormat
                 }
             }
         }

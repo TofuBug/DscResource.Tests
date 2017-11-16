@@ -118,7 +118,7 @@ function Measure-ParameterBlockMandatoryNamedArgument
         [bool] $InAClass = Test-IsInClass -Ast $NamedAttributeArgumentAst
 
         # Parameter Attributes are not valid in classes, and DscProperty does
-        # not use hte (Mandatory = $true) format just DscProperty(Mandatory)
+        # not use the (Mandatory = $true) format just DscProperty(Mandatory)
         if (!$InAClass)
         {
             if ($NamedAttributeArgumentAst.ArgumentName -eq 'Mandatory')
