@@ -179,7 +179,6 @@ Describe "$($script:ModuleName) Unit Tests" {
 
                 $record = Invoke-ScriptAnalyzer -ScriptDefinition $definition -CustomRulePath $modulePath
                 $record | Should Be $null
-                ($record | Measure-Object).Count | Should Be 0
             }
         }
 
@@ -346,6 +345,7 @@ Describe "$($script:ModuleName) Unit Tests" {
 
                 Invoke-ScriptAnalyzer -ScriptDefinition $definition -CustomRulePath $modulePath | Should BeNullOrEmpty
             }
+
             Context 'When Mandatory Attribute NamedParameter is in a class' {
                 It 'Should not return any records' {
                     $definition = '
@@ -373,12 +373,11 @@ Describe "$($script:ModuleName) Unit Tests" {
                         }
                     }
                 '
-    
                     $record = Invoke-ScriptAnalyzer -ScriptDefinition $definition -CustomRulePath $modulePath
                     $record | Should Be $null
-                    ($record | Measure-Object).Count | Should Be 0
                 }
             }
+
             Context 'When Mandatory Attribute NamedParameter is in script block in a property in a class' {
                 It 'Should return records for NameParameter in the ScriptBlock only' {
                     $definition = '
@@ -1366,8 +1365,7 @@ Describe "$($script:ModuleName) Unit Tests" {
                     $record = Invoke-ScriptAnalyzer @invokeScriptAnalyzerParameters
                     ($record | Measure-Object).Count | Should BeExactly 1
                     $record.Message | Should Be $localizedData.EnumOpeningBraceNotOnSameLine
-                }
-            
+                }            
             }
 
             Context 'When Enum Opening brace is not followed by a new line' {
@@ -1378,12 +1376,10 @@ Describe "$($script:ModuleName) Unit Tests" {
                         Bad
                     }
                 '
-
                     $record = Invoke-ScriptAnalyzer @invokeScriptAnalyzerParameters
                     ($record | Measure-Object).Count | Should BeExactly 1
                     $record.Message | Should Be $localizedData.EnumOpeningBraceShouldBeFollowedByNewLine
                 }
-            
             }
 
             Context 'When Enum opening brace is followed by more than one new line' {
@@ -1391,7 +1387,7 @@ Describe "$($script:ModuleName) Unit Tests" {
                     $invokeScriptAnalyzerParameters['ScriptDefinition'] = '
                     enum Test 
                     {
-                    
+                        
                         Good
                         Bad
                     }
@@ -1401,9 +1397,9 @@ Describe "$($script:ModuleName) Unit Tests" {
                     ($record | Measure-Object).Count | Should BeExactly 1
                     $record.Message | Should Be $localizedData.EnumOpeningBraceShouldBeFollowedByOnlyOneNewLine
                 }
-            
             }
         }
+        
         Context 'Class' {
             Context 'When Class has an opening brace on the same line' {
                 It 'Should write the correct error record' {
@@ -1420,7 +1416,6 @@ Describe "$($script:ModuleName) Unit Tests" {
                     ($record | Measure-Object).Count | Should BeExactly 1
                     $record.Message | Should Be $localizedData.ClassOpeningBraceNotOnSameLine
                 }
-            
             }
 
             Context 'When Class Opening brace is not followed by a new line' {
@@ -1438,7 +1433,6 @@ Describe "$($script:ModuleName) Unit Tests" {
                     ($record | Measure-Object).Count | Should BeExactly 1
                     $record.Message | Should Be $localizedData.ClassOpeningBraceShouldBeFollowedByNewLine
                 }
-            
             }
 
             Context 'When Class opening brace is followed by more than one new line' {
@@ -1446,7 +1440,7 @@ Describe "$($script:ModuleName) Unit Tests" {
                     $invokeScriptAnalyzerParameters['ScriptDefinition'] = '
                     class Test 
                     {
-                    
+
                         [int] $Good
                         [Void] Bad()
                         {
@@ -1458,7 +1452,6 @@ Describe "$($script:ModuleName) Unit Tests" {
                     ($record | Measure-Object).Count | Should BeExactly 1
                     $record.Message | Should Be $localizedData.ClassOpeningBraceShouldBeFollowedByOnlyOneNewLine
                 }
-            
             }
         }
     }

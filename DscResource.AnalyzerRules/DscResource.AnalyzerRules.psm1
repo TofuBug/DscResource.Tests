@@ -50,10 +50,13 @@ function Measure-ParameterBlockParameterAttribute
     try
     {
         $script:diagnosticRecord['Extent'] = $ParameterAst.Extent
-        [bool] $InAClass = Test-IsInClass -Ast $ParameterAst
-        # If we are in a class the parameter attributes are not valid in Classes
-        # the ParameterValidation attributes are however
-        if (!$InAClass)
+        [System.Boolean] $inAClass = Test-IsInClass -Ast $ParameterAst
+        
+        <# 
+            If we are in a class the parameter attributes are not valid in Classes
+            the ParameterValidation attributes are however
+        #>
+        if (!$inAClass)
         {
             if ($ParameterAst.Attributes.TypeName.FullName -notcontains 'parameter')
             {
@@ -115,11 +118,13 @@ function Measure-ParameterBlockMandatoryNamedArgument
 
     try
     {
-        [bool] $InAClass = Test-IsInClass -Ast $NamedAttributeArgumentAst
+        [System.Boolean] $inAClass = Test-IsInClass -Ast $NamedAttributeArgumentAst
 
-        # Parameter Attributes are not valid in classes, and DscProperty does
-        # not use the (Mandatory = $true) format just DscProperty(Mandatory)
-        if (!$InAClass)
+        <# 
+            Parameter Attributes are not valid in classes, and DscProperty does
+            not use the (Mandatory = $true) format just DscProperty(Mandatory)
+        #>
+        if (!$inAClass)
         {
             if ($NamedAttributeArgumentAst.ArgumentName -eq 'Mandatory')
             {
@@ -664,7 +669,7 @@ function Measure-SwitchStatement
         {
             $script:diagnosticRecord['Message'] = $localizedData.SwitchStatementOpeningBraceNotOnSameLine
             $script:diagnosticRecord -as $diagnosticRecordType
-        }
+        } # if
         elseif (Test-StatementOpeningBraceIsNotFollowedByNewLine @testParameters)
         {
             $script:diagnosticRecord['Message'] = $localizedData.SwitchStatementOpeningBraceShouldBeFollowedByNewLine
@@ -727,7 +732,7 @@ function Measure-TryStatement
         {
             $script:diagnosticRecord['Message'] = $localizedData.TryStatementOpeningBraceNotOnSameLine
             $script:diagnosticRecord -as $diagnosticRecordType
-        }
+        } # if
 
         if (Test-StatementOpeningBraceIsNotFollowedByNewLine @testParameters)
         {
@@ -856,7 +861,7 @@ function Measure-TypeDefinition
             {
                 $script:diagnosticRecord['Message'] = $localizedData.EnumOpeningBraceNotOnSameLine
                 $script:diagnosticRecord -as $diagnosticRecordType
-            }
+            } # if
 
             if (Test-StatementOpeningBraceIsNotFollowedByNewLine @testParameters)
             {
@@ -869,14 +874,14 @@ function Measure-TypeDefinition
                 $script:diagnosticRecord['Message'] = $localizedData.EnumOpeningBraceShouldBeFollowedByOnlyOneNewLine
                 $script:diagnosticRecord -as $diagnosticRecordType
             } # if
-        }
+        } # if
         elseif ($TypeDefinitionAst.IsClass)
         {
             if (Test-StatementOpeningBraceOnSameLine @testParameters)
             {
                 $script:diagnosticRecord['Message'] = $localizedData.ClassOpeningBraceNotOnSameLine
                 $script:diagnosticRecord -as $diagnosticRecordType
-            }
+            } # if
 
             if (Test-StatementOpeningBraceIsNotFollowedByNewLine @testParameters)
             {
@@ -889,7 +894,7 @@ function Measure-TypeDefinition
                 $script:diagnosticRecord['Message'] = $localizedData.ClassOpeningBraceShouldBeFollowedByOnlyOneNewLine
                 $script:diagnosticRecord -as $diagnosticRecordType
             } # if
-        }
+        } # if
     }
     catch
     {

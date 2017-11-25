@@ -2,35 +2,18 @@
     .SYNOPSIS
         Helper function to check if an Ast is part of a class.
         Returns true or false
+
     .EXAMPLE
-        IsInClass -Ast $ParameterBlockAst
+        Test-IsInClass -Ast $ParameterBlockAst
 
     .INPUTS
-        [System.]
+        [System.Management.Automation.Language.Ast]
 
     .OUTPUTS
-        [System.String[]]
+        [System.Boolean]
 
    .NOTES
-        None
-#>
-function Test-IsInClass
-{
-    [CmdletBinding()]
-    [OutputType([bool])]
-    param
-    (
-        [Parameter(Mandatory = $true)]
-        [ValidateNotNullOrEmpty()]
-        [System.Management.Automation.Language.Ast]
-        $Ast
-    )
-
-    <# 
-        Check if Parameter is in a method call for a Class
-        or if a Named Attribute is part of a Class Property
-
-        I initially just walked up the AST tree till I hit
+        I initially just walked up the AST tree till I hit 
         a TypeDefinitionAst that was a class
 
         But...
@@ -59,45 +42,46 @@ function Test-IsInClass
         So This check has to be a DELIBERATE step by step up the
         AST Tree ONLY far enough to validate if it is directly
         part of a class or not
-    #>
-    [bool] $InAClass = $false
-    <#  
-        As far as I know the only place you can have nammed
-        Attribute Arguments in Classes is on Properties.
-        Arguments in Methods of classes only support Types
-        
-        This makes it easy to say If its part of an Attribute
-        That is part of a PropertyMember
-        That is part of a TypeDefinition
-        This Is a class
+#>
+function Test-IsInClass
+{
+    [CmdletBinding()]
+    [OutputType([System.Boolean])]
+    param
+    (
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [System.Management.Automation.Language.Ast]
+        $Ast
+    )
 
-        That our Named Attribute Argument is part of a class
-    #>
+    [System.Boolean] $inAClass = $false
+    # Is a Named Attribute part of Class Property?
     if ($Ast -is [System.Management.Automation.Language.NamedAttributeArgumentAst])
     {
-        $InAClass = $Ast.Parent -is [System.Management.Automation.Language.AttributeAst] -and 
+        # Parent is an Attribute Ast AND
+        $inAClass = $Ast.Parent -is [System.Management.Automation.Language.AttributeAst] -and 
+            # Grandparent is a Property Member Ast (This Ast Type ONLY shows up inside a TypeDefinitionAst) AND
             $Ast.Parent.Parent -is [System.Management.Automation.Language.PropertyMemberAst] -and
+            # Great Grandparent is a Type Definition Ast AND
             $Ast.Parent.Parent.Parent -is [System.Management.Automation.Language.TypeDefinitionAst] -and
+            # Great Grandparent is a Class
             $ast.Parent.Parent.Parent.IsClass
     }
-    <#
-        Since classes do not support param blocks inside
-        Their method bodies, we only have to check if it is 
-        part of a FunctionDefintion
-        That is part of a FunctionMember (Class Method)
-        That is part of a TypeDefinition
-        That is a class
-
-        then our Parameter is part of a class
-    #>
+    # Is a Parameter part of a Class Method?
     elseif ($Ast -is [System.Management.Automation.Language.ParameterAst])
     {
-        $InAClass = $Ast.Parent -is [System.Management.Automation.Language.FunctionDefinitionAst] -and
+        # Parent is a Function Definition Ast AND
+        $inAClass = $Ast.Parent -is [System.Management.Automation.Language.FunctionDefinitionAst] -and
+            # Grandparent is a Function Member Ast (This Ast Type ONLY shows up inside a TypeDefinitionAst) AND 
             $Ast.Parent.Parent -is [System.Management.Automation.Language.FunctionMemberAst] -and
+            # Great Grandparent is a Type Definition Ast AND
             $Ast.Parent.Parent.Parent -is [System.Management.Automation.Language.TypeDefinitionAst] -and
+            # Great Grandparent is a Class
             $Ast.Parent.Parent.Parent.IsClass
     }
-    $InAClass
+
+    $inAClass
 }
 
 <#
@@ -263,4 +247,3 @@ function Test-StatementOpeningBraceIsFollowedByMoreThanOneNewLine
 
     return $false
 }
-

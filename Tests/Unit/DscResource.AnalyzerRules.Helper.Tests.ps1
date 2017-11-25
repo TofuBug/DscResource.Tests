@@ -3,6 +3,7 @@ Describe 'DscResource.AnalyzerRules.Helper Unit Tests' {
         $projectRootPath = Split-Path -Path (Split-Path -Path $PSScriptRoot -Parent) -Parent
         $moduleRootPath = Join-Path -Path $projectRootPath -ChildPath 'DscResource.AnalyzerRules'
         $modulePath = Join-Path -Path $moduleRootPath -ChildPath 'DscResource.AnalyzerRules.Helper.psm1'
+
         Import-Module -Name $modulePath -Force
     }
     InModuleScope 'DscResource.AnalyzerRules.Helper' {
@@ -178,10 +179,10 @@ Describe 'DscResource.AnalyzerRules.Helper Unit Tests' {
             }
         }
 
-        Describe 'Test-IsInClass work' {
+        Describe 'Test-isInClass work' {
             Context 'Non Class AST' {
                 It 'Should return false for an AST not in a Class AST' {
-                    $Definition = '
+                    $definition = '
                     function Get-Something
                     {
                         Param
@@ -194,16 +195,24 @@ Describe 'DscResource.AnalyzerRules.Helper Unit Tests' {
                         $Path
                     }
                 '
-                    $Ast = [System.Management.Automation.Language.Parser]::ParseInput($Definition, [ref] $null, [ref] $null)
-                    $ParameterAst = $Ast.Find( {param([System.Management.Automation.Language.Ast] $AST) $Ast -is [System.Management.Automation.Language.ParameterAst]}, $true)            
+                    $Ast = [System.Management.Automation.Language.Parser]::ParseInput($definition, [ref] $null, [ref] $null)
+                    $ParameterAst = $Ast.Find( {
+                        param
+                        (
+                            [System.Management.Automation.Language.Ast] 
+                            $AST
+                        ) 
+                        $Ast -is [System.Management.Automation.Language.ParameterAst]
+                    }, $true)            
                     ($ParameterAst -is [System.Management.Automation.Language.ParameterAst]) | Should Be $true
-                    $IsInClass = Test-IsInClass -Ast $ParameterAst
-                    $IsInClass | Should Be $false
+                    $isInClass = Test-isInClass -Ast $ParameterAst
+                    $isInClass | Should Be $false
                 }
             }
+
             Context 'Class AST' {
                 It 'Should Return True for an AST contained in a class AST' {
-                    $Definition = '
+                    $definition = '
                     class Something
                     {
                         [void] Write([int] $Num)
@@ -212,15 +221,22 @@ Describe 'DscResource.AnalyzerRules.Helper Unit Tests' {
                         }
                     }
                 '
-                    $Ast = [System.Management.Automation.Language.Parser]::ParseInput($Definition, [ref] $null, [ref] $null)
-                    $ParameterAst = $Ast.Find( {param([System.Management.Automation.Language.Ast] $AST) $Ast -is [System.Management.Automation.Language.ParameterAst]}, $true)            
+                    $Ast = [System.Management.Automation.Language.Parser]::ParseInput($definition, [ref] $null, [ref] $null)
+                    $ParameterAst = $Ast.Find( {
+                        param
+                        (
+                            [System.Management.Automation.Language.Ast] 
+                            $AST
+                        ) 
+                        $Ast -is [System.Management.Automation.Language.ParameterAst]
+                    }, $true)            
                     ($ParameterAst -is [System.Management.Automation.Language.ParameterAst]) | Should Be $true
-                    $IsInClass = Test-IsInClass -Ast $ParameterAst
-                    $IsInClass | Should Be $true
+                    $isInClass = Test-isInClass -Ast $ParameterAst
+                    $isInClass | Should Be $true
                 }
 
                 It "Should return false for an AST contained in a ScriptBlock`r`n`tthat is a value assignment for a property or method in a class AST" {
-                    $Definition = '
+                    $definition = '
                     class Something
                     {
                         [Func[Int,Int]] $MakeInt = {
@@ -234,11 +250,18 @@ Describe 'DscResource.AnalyzerRules.Helper Unit Tests' {
                         }    
                     }
                 '
-                    $Ast = [System.Management.Automation.Language.Parser]::ParseInput($Definition, [ref] $null, [ref] $null)
-                    $ParameterAst = $Ast.Find( {param([System.Management.Automation.Language.Ast] $AST) $Ast -is [System.Management.Automation.Language.ParameterAst]}, $true)            
+                    $Ast = [System.Management.Automation.Language.Parser]::ParseInput($definition, [ref] $null, [ref] $null)
+                    $ParameterAst = $Ast.Find( {
+                        param
+                        (
+                            [System.Management.Automation.Language.Ast] 
+                            $AST
+                        ) 
+                        $Ast -is [System.Management.Automation.Language.ParameterAst]
+                    }, $true)            
                     ($ParameterAst -is [System.Management.Automation.Language.ParameterAst]) | Should Be $true
-                    $IsInClass = Test-IsInClass -Ast $ParameterAst
-                    $IsInClass | Should Be $false
+                    $isInClass = Test-isInClass -Ast $ParameterAst
+                    $isInClass | Should Be $false
 
                 }
             }
