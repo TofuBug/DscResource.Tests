@@ -199,11 +199,11 @@ Describe 'DscResource.AnalyzerRules.Helper Unit Tests' {
                     $ParameterAst = $Ast.Find( {
                         param
                         (
-                            [System.Management.Automation.Language.Ast] 
+                            [System.Management.Automation.Language.Ast]
                             $AST
-                        ) 
+                        )
                         $Ast -is [System.Management.Automation.Language.ParameterAst]
-                    }, $true)            
+                    }, $true)
                     ($ParameterAst -is [System.Management.Automation.Language.ParameterAst]) | Should Be $true
                     $isInClass = Test-isInClass -Ast $ParameterAst
                     $isInClass | Should Be $false
@@ -225,11 +225,11 @@ Describe 'DscResource.AnalyzerRules.Helper Unit Tests' {
                     $ParameterAst = $Ast.Find( {
                         param
                         (
-                            [System.Management.Automation.Language.Ast] 
+                            [System.Management.Automation.Language.Ast]
                             $AST
-                        ) 
+                        )
                         $Ast -is [System.Management.Automation.Language.ParameterAst]
-                    }, $true)            
+                    }, $true)
                     ($ParameterAst -is [System.Management.Automation.Language.ParameterAst]) | Should Be $true
                     $isInClass = Test-isInClass -Ast $ParameterAst
                     $isInClass | Should Be $true
@@ -245,20 +245,20 @@ Describe 'DscResource.AnalyzerRules.Helper Unit Tests' {
                             (
                                 [Parameter(Mandatory)]
                                 [int] $Input
-                            ) 
+                            )
                             $Input * 2
-                        }    
+                        }
                     }
                 '
                     $Ast = [System.Management.Automation.Language.Parser]::ParseInput($definition, [ref] $null, [ref] $null)
                     $ParameterAst = $Ast.Find( {
                         param
                         (
-                            [System.Management.Automation.Language.Ast] 
+                            [System.Management.Automation.Language.Ast]
                             $AST
-                        ) 
+                        )
                         $Ast -is [System.Management.Automation.Language.ParameterAst]
-                    }, $true)            
+                    }, $true)
                     ($ParameterAst -is [System.Management.Automation.Language.ParameterAst]) | Should Be $true
                     $isInClass = Test-isInClass -Ast $ParameterAst
                     $isInClass | Should Be $false
