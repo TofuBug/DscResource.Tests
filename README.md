@@ -518,7 +518,6 @@ Configuration MSFT_xSQLServerAlwaysOnService_EnableAlwaysOn_Config
 * Modified current Parameter, and AttributeArgument Analyzer Rules to check for Class membership and properly validate in those cases as well as the current Function based Cmdlets
   * Created new unit tests to validate the new Analyzer rules pass or fail as expected for Class based resources
 
-
 ### 0.2.0.0
 
 * Fixed unicode and path bugs in tests
